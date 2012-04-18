@@ -2,47 +2,40 @@
 # -*- coding: utf-8 -*-
 
 import urllib2
-import HTMLParser
+from lxml import etree
 
 URL = \
-    'http://www.tntvillage.scambioetico.org/index.php?act=allreleases&st=0&filter=&sb=1&sd=0&cat=4'
+    'http://www.tntvillage.scambioetico.org/index.php?act=allreleases&st=%d&filter=&sb=1&sd=0&cat=4'
 
 
-class Tokenizer(HTMLParser.HTMLParser):
-
-    def __init__(self, *args, **argd):
-        HTMLParser.HTMLParser.__init__(self, *args, **argd)
-        self.tokens = []
-
-    def handle_starttag(self, tag, attrs):
-        self.tokens.append(('STARTTAG', tag, attrs))
-
-    def handle_endtag(self, tag):
-        self.tokens.append(('ENDTAG', tag))
-
-    def handle_data(self, data):
-        self.tokens.append(('DATA', data))
-
-    def tokensGen(self):
-        return (elem for elem in self.tokens)
+def getUrl(page):
+    return URL % (page * 35)
 
 
-def parseHeader(tokenizer):
-    t = tokenizer.next()
-    assert t[0] == 'STARTTAG'
-    assert t[1] == 'tr'
+def getPageContent(page):
+    response = urllib2.urlopen(getUrl(page))
+    parser = etree.HTMLParser()
+    tree = etree.parse(response, parser)
+    root = tree.getroot()
+    tableElement = \
+        root.findall('body/div/div/table/tr/td/div/table/tr/td/div/table[@class="copyright"]'
+                     )[0]
+    rows = tableElement.findall('tr')
+    rows = [e for (i, e) in enumerate(rows) if i > 0]
+    values = []
+    for r in rows:
+        d = {'title': r[1].findall('a')[0].text,
+             'torrent': r[0].findall('span/a')[1].attrib['href']}
+        values.append(d)
+    return values
 
 
-def parseDocument(tokenizer):
-    for t in tokenizer:
-        if t[0] == 'STARTTAG' and t[1] == 'table' and ('class',
-                'copyright') in t[2]:
-            break
-    parseHeader(tokenizer)
+def pagesGenerator():
+    page = 0
+    while True:
+        yield getPageContent(page)
 
 
 if __name__ == '__main__':
-    response = urllib2.urlopen(URL)
-    t = Tokenizer()
-    t.feed(response.read())
-    parseDocument(t.tokensGen())
+    for (i, pageContent) in enumerate(pagesGenerator()):
+        print i
