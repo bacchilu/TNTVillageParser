@@ -34,8 +34,18 @@ def pagesGenerator():
     page = 0
     while True:
         yield getPageContent(page)
+        page += 1
 
+
+def getTorrents():
+    for page in pagesGenerator():
+        for t in page:
+            yield t
+
+
+if __name__ == '__main__2':
+    for (i, film) in enumerate(getTorrents()):
+        print i, film['title']
 
 if __name__ == '__main__':
-    for (i, pageContent) in enumerate(pagesGenerator()):
-        print i
+    print getPageContent(0)
