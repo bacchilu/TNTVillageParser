@@ -32,5 +32,5 @@ if __name__ == '__main__':
     with open(sys.argv[1], 'w') as fp:
         fp.write(HTML_TEMPLATE_HEADER)
         for (i, film) in enumerate(tntparser.filmGenerator()):
-            fp.write(toTR(i, film).encode('utf-8'))
+            fp.write(toTR(i + 1, film).encode('utf-8'))
         fp.write(HTML_TEMPLATE_FOOTER)
