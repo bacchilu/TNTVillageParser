@@ -1,0 +1,9 @@
+tntparser.py parses all 414 (at the moment) pages in http://www.tntvillage.scambioetico.org, FILMS section.
+
+main.py generated a single html file with a complete list of the torrent files.
+
+Usage:
+
+	python main.py index.html
+
+the file index.html will be created.
